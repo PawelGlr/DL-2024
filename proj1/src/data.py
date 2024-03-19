@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import ConcatDataset, DataLoader
 import torchvision
-import torchvision.transforms as transforms
+import torchvision.transforms.v2 as transforms
 import os
 from pathlib import Path
 import shutil
@@ -60,7 +60,7 @@ def get_cv_data_loaders(
     cinic_mean = [0.47889522, 0.47227842, 0.43047404]
     cinic_std = [0.24205776, 0.23828046, 0.25874835]
 
-    dataloader_setting = {"batch_size": batch_size, "num_workers": num_workers}
+    dataloader_setting = {"batch_size": batch_size, "num_workers": num_workers, "pin_memory": True, "persistent_workers": True}
 
     train_transform_list = [transforms.ToTensor()]
     valid_transform_list = [transforms.ToTensor()]
