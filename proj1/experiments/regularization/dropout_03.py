@@ -12,24 +12,24 @@ from proj1.src.data import get_cv_data_loaders
 
 if __name__ == '__main__':    
     hyperparameters = {
-        "lr": 1e-5,
+        "lr": 1e-4,
         "pretrained": True,
         "model": "resnet18",
         "fc": "512x10",
-        "regularization": "None",
+        "regularization": "dropout 0.3",
         "frozen_layers": "None",
         "early_stopping": "None",
         "other": "None"
     }
 
-    run_name = "resnet18/test_NoAug_Fc512x10_Pretrained_lr_(1e-5)"
+    run_name = "resnet18/dropout_03_no_augs"
 
 
     class ResNetClassifier(pl.LightningModule):
         def __init__(self):
             super().__init__()
             self.resnet = models.resnet18(pretrained=True)
-            self.resnet.fc = torch.nn.Linear(512, 10)
+            self.resnet.fc = torch.nn.Sequential(torch.nn.Dropout(0.3), torch.nn.Linear(512, 10)) 
 
         def forward(self, x):
             return self.resnet(x)
@@ -83,10 +83,10 @@ if __name__ == '__main__':
             name=f"{run_name}/runs",
             default_hp_metric=False,
         )
-        trainer = pl.Trainer(max_epochs=100, 
+        trainer = pl.Trainer(max_epochs=30, 
                              logger=logger, 
                              enable_checkpointing=False, 
-                             callbacks=EarlyStopping(monitor="val_accuracy", mode="max"))
+                             callbacks=EarlyStopping(monitor="val_loss", mode="min", patience=2))
         trainer.fit(model, train_dataloader, valid_dataloader)
         test_scores = trainer.test(model, test_dataloader)
         results.append(test_scores[0])

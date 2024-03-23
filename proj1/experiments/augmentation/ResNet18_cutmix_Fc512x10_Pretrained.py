@@ -25,11 +25,11 @@ if __name__ == '__main__':
         "regularization": "None",
         "frozen_layers": "None",
         "early_stopping": "None",
-        "augmentations": "flip",
+        "augmentations": "cutmix",
         "other": "None"
     }
 
-    run_name = "resnet18/test_rotation_Fc512x10_Pretrained"
+    run_name = "resnet18/test_rcutmix"
 
 
     class ResNetClassifier(pl.LightningModule):
@@ -37,12 +37,14 @@ if __name__ == '__main__':
             super().__init__()
             self.resnet = models.resnet18(pretrained=True)
             self.resnet.fc = torch.nn.Linear(512, 10)
+            self.transform = transforms.CutMix(num_classes=10)
 
         def forward(self, x):
             return self.resnet(x)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
+            x, y = self.transform(x, y)
             logits = self(x)
             loss = torch.nn.functional.cross_entropy(logits, y)
             self.log("train_loss", loss)
@@ -83,17 +85,17 @@ if __name__ == '__main__':
 
 
     results = []
-    for train_dataloader, valid_dataloader, test_dataloader in get_cv_data_loaders(train_transforms=[transforms.RandomHorizontalFlip(0.25), transforms.RandomVerticalFlip(0.25)]):
+    for train_dataloader, valid_dataloader, test_dataloader in get_cv_data_loaders():
         model = ResNetClassifier()
         logger = TensorBoardLogger(
             "lightning_logs",
             name=f"{run_name}/runs",
             default_hp_metric=False,
         )
-        trainer = pl.Trainer(max_epochs=2, 
+        trainer = pl.Trainer(max_epochs=20, 
                              logger=logger, 
                              enable_checkpointing=False, 
-                             callbacks=EarlyStopping(monitor="val_accuracy", mode="max"))
+                             callbacks=EarlyStopping(monitor="val_loss", mode="min", patience=2))
         trainer.fit(model, train_dataloader, valid_dataloader)
         test_scores = trainer.test(model, test_dataloader)
         results.append(test_scores[0])

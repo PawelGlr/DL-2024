@@ -29,7 +29,7 @@ if __name__ == '__main__':
         "other": "None"
     }
 
-    run_name = "resnet18/test_rotation_Fc512x10_Pretrained"
+    run_name = "resnet18/test_aug_flip"
 
 
     class ResNetClassifier(pl.LightningModule):
@@ -90,10 +90,10 @@ if __name__ == '__main__':
             name=f"{run_name}/runs",
             default_hp_metric=False,
         )
-        trainer = pl.Trainer(max_epochs=2, 
+        trainer = pl.Trainer(max_epochs=20, 
                              logger=logger, 
                              enable_checkpointing=False, 
-                             callbacks=EarlyStopping(monitor="val_accuracy", mode="max"))
+                             callbacks=EarlyStopping(monitor="val_accuracy", mode="max", patience=2))
         trainer.fit(model, train_dataloader, valid_dataloader)
         test_scores = trainer.test(model, test_dataloader)
         results.append(test_scores[0])

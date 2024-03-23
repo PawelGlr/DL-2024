@@ -83,7 +83,7 @@ if __name__ == '__main__':
             name=f"{run_name}/runs",
             default_hp_metric=False,
         )
-        trainer = pl.Trainer(max_epochs=2, 
+        trainer = pl.Trainer(max_epochs=10, 
                              logger=logger, 
                              enable_checkpointing=False, 
                              callbacks=EarlyStopping(monitor="val_accuracy", mode="max"))
