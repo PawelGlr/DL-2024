@@ -13,6 +13,7 @@ sys.path.append(".")
 from proj1.src.data import get_cv_data_loaders
 
 if __name__ == '__main__':
+    torch.manual_seed(42)
 
     with open('proj1/experiments/augmentation/lr_opt.txt') as f: 
         config = json.loads(f.read())
