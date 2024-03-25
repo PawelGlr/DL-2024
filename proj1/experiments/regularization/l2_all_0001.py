@@ -11,6 +11,7 @@ sys.path.append(".")
 from proj1.src.data import get_cv_data_loaders
 
 if __name__ == '__main__':    
+    torch.manual_seed(42)
     hyperparameters = {
         "lr": 1e-4,
         "pretrained": True,
